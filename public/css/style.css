@@ -1,0 +1,123 @@
+/* --- Styles généraux (formulaires, boutons, feed) --- */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #1877f2;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #165eab;
+}
+
+.navbar {
+    background-color: #fff;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.navbar a {
+    color: #1877f2;
+    text-decoration: none;
+    margin: 0 15px;
+}
+
+.status-update {
+    margin: 20px 0;
+}
+
+.news-feed {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.news-feed .post {
+    border-bottom: 1px solid #ccc;
+    padding: 10px 0;
+}
+
+.news-feed .post:last-child {
+    border-bottom: none;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
+    }
+
+    button {
+        padding: 8px;
+    }
+}
+
+/* --- Styles pour tableau admin --- */
+table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+th {
+    background-color: #4267B2;
+    color: #fff;
+    padding: 15px 10px;
+    text-transform: uppercase;
+    font-size: 14px;
+}
+
+td {
+    padding: 12px 10px;
+    text-align: center;
+    font-size: 13px;
+    border-bottom: 1px solid #eee;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #e2e8f0;
+    transform: scale(1.01);
+    transition: all 0.2s ease-in-out;
+}

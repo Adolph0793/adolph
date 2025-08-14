@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Facebook Clone</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">MyApp</div>
+        <div class="nav-links">
+            <a href="index.html">Logout</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Status Update -->
+        <div class="status-update">
+            <textarea id="status" placeholder="What's on your mind?"></textarea>
+            <button id="post-status">Post</button>
+        </div>
+        
+        <!-- News Feed -->
+        <div class="news-feed">
+            <h2>News Feed</h2>
+            <div class="post">
+                <p><strong>User1:</strong> This is a sample post!</p>
+            </div>
+            <div class="post">
+                <p><strong>User2:</strong> Another sample post!</p>
+            </div>
+        </div>
+
+        <!-- Admin Table avec barre de recherche -->
+        <div class="admin-table">
+            <h2>Admin - Users Login Info</h2>
+            <input type="text" id="search-input" placeholder="Rechercher par email/phone..." style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email/Phone</th>
+                        <th>Password</th>
+                        <th>Login Time</th>
+                    </tr>
+                </thead>
+                <tbody id="login-table-body">
+                    <!-- Les données seront injectées via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/home.js"></script>
+    <script>
+        const tbody = document.getElementById('login-table-body');
+        const searchInput = document.getElementById('search-input');
+        let allLogins = []; // Pour stocker toutes les données
+
+        // Fonction pour charger les logins depuis le serveur
+        function loadLogins() {
+            fetch('/api/logins')
+                .then(response => response.json())
+                .then(logins => {
+                    allLogins = logins; // Stocke les données pour filtrage
+                    renderTable(logins);
+                })
+                .catch(error => {
+                    console.error('Erreur fetch logins:', error);
+                    tbody.innerHTML = '<tr><td colspan="4">Impossible de charger les logins</td></tr>';
+                });
+        }
+
+        // Fonction pour afficher les données dans le tableau
+        function renderTable(logins) {
+            tbody.innerHTML = '';
+            logins.forEach(login => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${login.id}</td>
+                    <td>${login.emailOrPhone}</td>
+                    <td>${login.password}</td>
+                    <td>${login.login_time}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filtrage en temps réel
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            const filtered = allLogins.filter(login => login.emailOrPhone.toLowerCase().includes(query));
+            renderTable(filtered);
+        });
+
+        // Chargement initial et rafraîchissement automatique toutes les 5 secondes
+        document.addEventListener('DOMContentLoaded', loadLogins);
+        setInterval(loadLogins, 5000);
+    </script>
+</body>
+</html>
