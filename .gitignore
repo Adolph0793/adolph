@@ -1,30 +1,28 @@
-# Node modules
+# Node.js dependencies
 node_modules/
-
-# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
 
-# Env files
+# Environment variables
 .env
-.env.local
-.env.*.local
 
-# Build output
-dist/
-build/
+# Logs
+logs
+*.log
+log.txt
 
-# OS files
+# OS-specific files
 .DS_Store
 Thumbs.db
 
-# Render cache
-.render/
-
-# VSCode settings
+# IDE-specific files
 .vscode/
+.idea/
 
-# Optional coverage folders
-coverage/
+# Backup files
+*.bak
+*.tmp
+
+# Render build cache
+.render-build/
