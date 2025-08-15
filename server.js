@@ -9,16 +9,20 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connexion PostgreSQL via Pool
-// Utiliser DATABASE_URL fourni par Render ou config locale
+// Connexion PostgreSQL
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/ma_base',
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
+// Test de connexion à la base
 pool.connect()
-  .then(() => console.log("✅ Connecté à PostgreSQL"))
-  .catch(err => console.error("Erreur PostgreSQL:", err));
+  .then(() => {
+    console.log("✅ Connecté à PostgreSQL :", process.env.DATABASE_URL ? "Render DB" : "Local DB");
+  })
+  .catch(err => {
+    console.error("❌ Erreur de connexion PostgreSQL :", err.message);
+  });
 
 // Fonction pour exécuter des requêtes avec retry
 async function runWithRetry(query, params, retries = 5) {
@@ -35,7 +39,7 @@ async function runWithRetry(query, params, retries = 5) {
   }
 }
 
-// Création des tables si elles n'existent pas
+// Création des tables
 (async () => {
   await runWithRetry(`
     CREATE TABLE IF NOT EXISTS users (
@@ -136,7 +140,7 @@ app.get('/api/logins', async (req, res) => {
   }
 });
 
-// Démarrage serveur
+// Lancement serveur
 app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré : http://localhost:${PORT}`);
+  console.log(`🚀 Serveur démarré sur le port ${PORT}`);
 });
