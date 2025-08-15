@@ -1,27 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Facebook Clone</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Login</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="login-box">
-            <h2>Login</h2>
-            <form id="loginForm" action="/login" method="post">
-                <div class="textbox">
-                    <input type="text" placeholder="Email or phone number" name="emailOrPhone" id="emailOrPhone" required>
-                </div>
-                <div class="textbox">
-                    <input type="password" placeholder="Password" name="password" required>
-                </div>
-                <button type="submit" class="btn">Login</button>
-            </form>
-            <p>Don't have an account? <a href="signup.html">Sign up</a></p>
-        </div>
-    </div>
-    <script src="js/login.js"></script>
+    <h1>Se connecter</h1>
+    <form action="/login" method="POST">
+        <label>Email ou téléphone:</label>
+        <input type="text" name="emailOrPhone" required>
+
+        <label>Mot de passe:</label>
+        <input type="password" name="password" required>
+
+        <button type="submit">Connexion</button>
+    </form>
+    <p>Pas encore inscrit ? <a href="/index.html">Créer un compte</a></p>
 </body>
 </html>

