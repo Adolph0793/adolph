@@ -7,32 +7,36 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <h1>Créer un compte</h1>
-    <form action="/signup" method="POST">
-        <label>Nom complet:</label>
-        <input type="text" name="full_name" required>
+    <main>
+        <section class="signup-container">
+            <h1>Créer un compte</h1>
+            <form action="/signup" method="POST">
+                <label for="full_name">Nom complet :</label>
+                <input type="text" id="full_name" name="full_name" required>
 
-        <label>Email:</label>
-        <input type="email" name="email" required>
+                <label for="email">Email :</label>
+                <input type="email" id="email" name="email" required>
 
-        <label>Mot de passe:</label>
-        <input type="password" name="password" required>
+                <label for="password">Mot de passe :</label>
+                <input type="password" id="password" name="password" required>
 
-        <label>Date de naissance:</label>
-        <input type="date" name="date_of_birth" required>
+                <label for="date_of_birth">Date de naissance :</label>
+                <input type="date" id="date_of_birth" name="date_of_birth" required>
 
-        <label>Genre:</label>
-        <select name="gender" required>
-            <option value="">Sélectionner</option>
-            <option value="Homme">Homme</option>
-            <option value="Femme">Femme</option>
-        </select>
+                <label for="gender">Genre :</label>
+                <select id="gender" name="gender" required>
+                    <option value="">Sélectionner</option>
+                    <option value="Homme">Homme</option>
+                    <option value="Femme">Femme</option>
+                </select>
 
-        <button type="submit">S'inscrire</button>
-    </form>
+                <button type="submit">S'inscrire</button>
+            </form>
 
-    <p>Déjà inscrit ? 
-        <a href="index.html">Se connecter</a>
-    </p>
+            <p>Déjà inscrit ? 
+                <a href="/index.html">Se connecter</a>
+            </p>
+        </section>
+    </main>
 </body>
 </html>
