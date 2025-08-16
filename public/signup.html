@@ -3,33 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Sign Up - MyApp</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Créer un compte</h1>
-    <form action="/signup" method="POST">
-        <label>Nom complet:</label>
-        <input type="text" name="full_name" required>
+    <div class="signup-container">
+        <h1>Créer un compte</h1>
+        <form action="/signup" method="POST">
+            <label>Nom complet:</label>
+            <input type="text" name="full_name" required>
 
-        <label>Email:</label>
-        <input type="email" name="email" required>
+            <label>Email:</label>
+            <input type="email" name="email" required>
 
-        <label>Mot de passe:</label>
-        <input type="password" name="password" required>
+            <label>Mot de passe:</label>
+            <input type="password" name="password" required>
 
-        <label>Date de naissance:</label>
-        <input type="date" name="date_of_birth" required>
+            <label>Date de naissance:</label>
+            <input type="date" name="date_of_birth" required>
 
-        <label>Genre:</label>
-        <select name="gender" required>
-            <option value="">Sélectionner</option>
-            <option value="Homme">Homme</option>
-            <option value="Femme">Femme</option>
-        </select>
+            <label>Genre:</label>
+            <select name="gender" required>
+                <option value="">Sélectionner</option>
+                <option value="Homme">Homme</option>
+                <option value="Femme">Femme</option>
+            </select>
 
-        <button type="submit">S'inscrire</button>
-    </form>
-    <p>Déjà inscrit ? <a href="/login.html">Se connecter</a></p>
+            <button type="submit">S'inscrire</button>
+        </form>
+        <p>Déjà inscrit ? <a href="login.html">Se connecter</a></p>
+    </div>
 </body>
 </html>

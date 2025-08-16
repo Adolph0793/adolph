@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Login - MyApp</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>Se connecter</h1>
-    <form action="/login" method="POST">
-        <label>Email ou téléphone:</label>
-        <input type="text" name="emailOrPhone" required>
+    <div class="login-container">
+        <h1>Se connecter</h1>
+        <form action="/login" method="POST">
+            <label>Email ou téléphone:</label>
+            <input type="text" name="emailOrPhone" required>
 
-        <label>Mot de passe:</label>
-        <input type="password" name="password" required>
+            <label>Mot de passe:</label>
+            <input type="password" name="password" required>
 
-        <button type="submit">Connexion</button>
-    </form>
-    <p>Pas encore inscrit ? <a href="/signup.html">Créer un compte</a></p>
+            <button type="submit">Connexion</button>
+        </form>
+        <p>Pas encore inscrit ? <a href="signup.html">Créer un compte</a></p>
+    </div>
 </body>
 </html>
