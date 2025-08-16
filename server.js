@@ -1,36 +1,36 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const session = require('express-session');  // 🔑 ajout sessions
+const session = require('express-session');
 const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ Configuration session
+// Sessions
 app.use(session({
-  secret: 'monSuperSecret', // ⚠️ change par une clé sécurisée en prod
+  secret: 'monSuperSecret', // 🔒 change en production
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: false } // ⚠️ mettre true si HTTPS
+  cookie: { secure: false } // mettre true si HTTPS
 }));
 
-// ✅ Connexion PostgreSQL
+// PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-// Retry DB query
+// Retry pour requêtes DB
 async function runWithRetry(query, params, retries = 5) {
   try {
     return await pool.query(query, params);
   } catch (err) {
     if (retries > 0) {
-      console.log(`Database error, retrying... (${retries} left)`);
       await new Promise(res => setTimeout(res, 50));
       return runWithRetry(query, params, retries - 1);
     } else {
@@ -39,7 +39,7 @@ async function runWithRetry(query, params, retries = 5) {
   }
 }
 
-// ✅ Création des tables
+// Création table users
 (async () => {
   try {
     await runWithRetry(`
@@ -52,10 +52,9 @@ async function runWithRetry(query, params, retries = 5) {
         gender TEXT NOT NULL
       );
     `);
-
-    console.log("✅ Tables vérifiées/créées avec succès !");
+    console.log("Tables prêtes ✅");
   } catch (err) {
-    console.error("❌ Erreur création tables :", err.message);
+    console.error("Erreur création tables :", err.message);
   }
 })();
 
@@ -71,15 +70,15 @@ app.get('/signup', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
-// Page home (protégée)
+// Page home protégée
 app.get('/home', (req, res) => {
   if (!req.session.user) {
-    return res.redirect('/login'); // 🔒 bloqué si pas connecté
+    return res.redirect('/login');
   }
   res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
 
-// ✅ Signup
+// Signup
 app.post('/signup', async (req, res) => {
   const { full_name, email, password, date_of_birth, gender } = req.body;
   const sql = `INSERT INTO users (full_name, email, password, date_of_birth, gender) VALUES ($1, $2, $3, $4, $5)`;
@@ -93,19 +92,18 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// ✅ Login
+// Login
 app.post('/login', async (req, res) => {
   const { emailOrPhone, password } = req.body;
 
   try {
-    // Vérifier utilisateur
     const result = await runWithRetry(
       "SELECT * FROM users WHERE email = $1 AND password = $2",
       [emailOrPhone, password]
     );
 
     if (result.rows.length > 0) {
-      req.session.user = { email: emailOrPhone }; // 🔑 stocke la session
+      req.session.user = { email: emailOrPhone };
       res.redirect('/home');
     } else {
       res.status(401).send('Email ou mot de passe incorrect');
@@ -116,17 +114,14 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ✅ Logout
+// Logout
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
-    if (err) {
-      console.error("Erreur logout:", err);
-    }
-    res.redirect('/login'); // retour page login
+    res.redirect('/login');
   });
 });
 
 /* ---------------- START SERVER ---------------- */
 app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+  console.log(`Serveur démarré sur le port ${PORT}`);
 });

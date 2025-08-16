@@ -1,56 +1,37 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home - MyApp</title>
-    <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - MyApp</title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="navbar">
-        <div class="logo">MyApp</div>
-        <div class="nav-links">
-            <a href="index.html">Logout</a>
-        </div>
+  <div class="navbar">
+    <div class="logo">MyApp</div>
+    <div class="nav-links">
+      <a href="/logout">Logout</a>
     </div>
-    
-    <div class="container">
-        <!-- Status Update -->
-        <div class="status-update">
-            <textarea id="status" placeholder="Quoi de neuf ?"></textarea>
-            <button id="post-status">Publier</button>
-        </div>
-        
-        <!-- News Feed -->
-        <div class="news-feed">
-            <h2>Fil d'actualité</h2>
-            <div class="post">
-                <div class="post-header">
-                    <img src="https://via.placeholder.com/40/0077ff/ffffff" alt="User Avatar">
-                    <strong>User1</strong>
-                </div>
-                <p>Ceci est un post exemple !</p>
-                <div class="post-actions">
-                    <button class="like-btn">Like <span class="like-count">0</span></button>
-                    <button class="comment-btn">Comment <span class="comment-count">0</span></button>
-                    <button class="share-btn">Share</button>
-                </div>
-            </div>
-            <div class="post">
-                <div class="post-header">
-                    <img src="https://via.placeholder.com/40/ff5500/ffffff" alt="User Avatar">
-                    <strong>User2</strong>
-                </div>
-                <p>Un autre post exemple !</p>
-                <div class="post-actions">
-                    <button class="like-btn">Like <span class="like-count">0</span></button>
-                    <button class="comment-btn">Comment <span class="comment-count">0</span></button>
-                    <button class="share-btn">Share</button>
-                </div>
-            </div>
-        </div>
+  </div>
+
+  <div class="container">
+    <div class="status-update">
+      <textarea id="status" placeholder="Quoi de neuf ?"></textarea>
+      <button id="post-status">Publier</button>
     </div>
 
-    <script src="js/home.js"></script>
+    <div class="news-feed">
+      <h2>Fil d'actualité</h2>
+      <div class="post">
+        <div class="post-header">
+          <img src="https://via.placeholder.com/40/0077ff/ffffff" alt="User Avatar">
+          <strong>User1</strong>
+        </div>
+        <p>Ceci est un post exemple !</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/home.js"></script>
 </body>
 </html>
