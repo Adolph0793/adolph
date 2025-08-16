@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { Pool } = require('pg'); // PostgreSQL
+const session = require('express-session');  // 🔑 ajout sessions
+const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
@@ -9,28 +10,21 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Connexion PostgreSQL via Pool avec SSL pour Render
+// ✅ Configuration session
+app.use(session({
+  secret: 'monSuperSecret', // ⚠️ change par une clé sécurisée en prod
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // ⚠️ mettre true si HTTPS
+}));
+
+// ✅ Connexion PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: { rejectUnauthorized: false }
 });
 
-// TEST CONNEXION DB
-(async () => {
-  try {
-    const client = await pool.connect();
-    console.log("✅ Connexion à PostgreSQL réussie !");
-    const res = await client.query('SELECT NOW()');
-    console.log("Date/heure actuelle dans la DB :", res.rows[0]);
-    client.release();
-  } catch (err) {
-    console.error("❌ Impossible de se connecter à PostgreSQL :", err.message);
-  }
-})();
-
-// Fonction pour exécuter des requêtes avec retry
+// Retry DB query
 async function runWithRetry(query, params, retries = 5) {
   try {
     return await pool.query(query, params);
@@ -45,7 +39,7 @@ async function runWithRetry(query, params, retries = 5) {
   }
 }
 
-// Création des tables si elles n'existent pas
+// ✅ Création des tables
 (async () => {
   try {
     await runWithRetry(`
@@ -59,22 +53,33 @@ async function runWithRetry(query, params, retries = 5) {
       );
     `);
 
-    await runWithRetry(`
-      CREATE TABLE IF NOT EXISTS logins (
-        id SERIAL PRIMARY KEY,
-        emailOrPhone TEXT,
-        password TEXT,
-        login_time TIMESTAMP
-      );
-    `);
-
     console.log("✅ Tables vérifiées/créées avec succès !");
   } catch (err) {
     console.error("❌ Erreur création tables :", err.message);
   }
 })();
 
-// Route signup
+/* ---------------- ROUTES ---------------- */
+
+// Page login
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Page signup
+app.get('/signup', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'signup.html'));
+});
+
+// Page home (protégée)
+app.get('/home', (req, res) => {
+  if (!req.session.user) {
+    return res.redirect('/login'); // 🔒 bloqué si pas connecté
+  }
+  res.sendFile(path.join(__dirname, 'public', 'home.html'));
+});
+
+// ✅ Signup
 app.post('/signup', async (req, res) => {
   const { full_name, email, password, date_of_birth, gender } = req.body;
   const sql = `INSERT INTO users (full_name, email, password, date_of_birth, gender) VALUES ($1, $2, $3, $4, $5)`;
@@ -82,34 +87,46 @@ app.post('/signup', async (req, res) => {
 
   try {
     await runWithRetry(sql, params);
-    res.redirect('/index.html');
+    res.redirect('/login');
   } catch (err) {
     res.status(400).send('Erreur création utilisateur : ' + err.message);
   }
 });
 
-// Route login
+// ✅ Login
 app.post('/login', async (req, res) => {
   const { emailOrPhone, password } = req.body;
-  const now = new Date();
-  const sql = `INSERT INTO logins (emailOrPhone, password, login_time) VALUES ($1, $2, $3)`;
-  const params = [emailOrPhone, password, now];
 
   try {
-    await runWithRetry(sql, params);
-    res.redirect('/home');
+    // Vérifier utilisateur
+    const result = await runWithRetry(
+      "SELECT * FROM users WHERE email = $1 AND password = $2",
+      [emailOrPhone, password]
+    );
+
+    if (result.rows.length > 0) {
+      req.session.user = { email: emailOrPhone }; // 🔑 stocke la session
+      res.redirect('/home');
+    } else {
+      res.status(401).send('Email ou mot de passe incorrect');
+    }
   } catch (err) {
-    console.error("Erreur insertion login:", err.message);
-    res.status(500).send('Erreur base de données');
+    console.error("Erreur login:", err.message);
+    res.status(500).send('Erreur serveur');
   }
 });
 
-// Route home (page après login)
-app.get('/home', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'home.html'));
+// ✅ Logout
+app.get('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error("Erreur logout:", err);
+    }
+    res.redirect('/login'); // retour page login
+  });
 });
 
-// Démarrage serveur
+/* ---------------- START SERVER ---------------- */
 app.listen(PORT, () => {
   console.log(`🚀 Serveur démarré sur le port ${PORT}`);
 });
