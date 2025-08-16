@@ -104,52 +104,9 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Route home
+// Route home (page après login)
 app.get('/home', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'home.html'));
-});
-
-// Route admin pour voir tous les logins
-app.get('/admin/logins', async (req, res) => {
-  try {
-    const result = await pool.query(`SELECT * FROM logins ORDER BY login_time DESC`);
-    let html = `
-    <html>
-    <head>
-        <title>Liste des logins</title>
-        <link rel="stylesheet" href="/css/admin.css">
-    </head>
-    <body>
-    <h1>Liste des logins</h1>
-    <table>
-    <tr><th>ID</th><th>Email/Phone</th><th>Password</th><th>Login Time</th></tr>`;
-    
-    result.rows.forEach(row => {
-      html += `<tr>
-        <td>${row.id}</td>
-        <td>${row.emailorphone}</td>
-        <td>${row.password}</td>
-        <td>${row.login_time}</td>
-      </tr>`;
-    });
-
-    html += `</table></body></html>`;
-    res.send(html);
-  } catch (err) {
-    console.error("Erreur récupération logins:", err.message);
-    res.status(500).send("Erreur base de données");
-  }
-});
-
-// API pour récupérer tous les logins
-app.get('/api/logins', async (req, res) => {
-  try {
-    const result = await pool.query(`SELECT * FROM logins ORDER BY login_time DESC`);
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Erreur récupération logins:', err.message);
-    res.status(500).json({ error: 'Erreur base de données' });
-  }
 });
 
 // Démarrage serveur
