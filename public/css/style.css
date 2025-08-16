@@ -132,6 +132,7 @@ body {
     padding: 5px 10px;
     border-radius: 5px;
 }
+
 .post-comment {
     background-color: #f0f2f5;
     margin: 5px 0 0 50px;
@@ -140,7 +141,93 @@ body {
     font-size: 13px;
 }
 
-
 .post-actions button:hover {
     background-color: #f0f2f5;
+}
+
+/* ===== Login / Signup Container ===== */
+.login-container,
+.signup-container {
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+    margin: 80px auto;
+}
+
+.login-container h1,
+.signup-container h1 {
+    text-align: center;
+    color: #1877f2;
+    margin-bottom: 20px;
+}
+
+.login-container label,
+.signup-container label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.login-container input,
+.signup-container input,
+.signup-container select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccd0d5;
+    font-size: 14px;
+}
+
+.login-container button,
+.signup-container button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #1877f2;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.login-container button:hover,
+.signup-container button:hover {
+    background-color: #165ec9;
+}
+
+.login-container p,
+.signup-container p {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.login-container a,
+.signup-container a {
+    color: #1877f2;
+    text-decoration: none;
+}
+
+.login-container a:hover,
+.signup-container a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Responsive ===== */
+@media screen and (max-width: 500px) {
+    .container, .login-container, .signup-container {
+        padding: 20px;
+        margin: 40px auto;
+    }
+
+    .post-header img {
+        width: 35px;
+        height: 35px;
+    }
 }
