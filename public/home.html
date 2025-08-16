@@ -25,61 +25,32 @@
         <div class="news-feed">
             <h2>News Feed</h2>
             <div class="post">
-                <p><strong>User1:</strong> This is a sample post!</p>
+                <div class="post-header">
+                    <img src="https://via.placeholder.com/40" alt="User Avatar">
+                    <strong>User1</strong>
+                </div>
+                <p>This is a sample post!</p>
+                <div class="post-actions">
+                    <button>Like</button>
+                    <button>Comment</button>
+                    <button>Share</button>
+                </div>
             </div>
             <div class="post">
-                <p><strong>User2:</strong> Another sample post!</p>
+                <div class="post-header">
+                    <img src="https://via.placeholder.com/40" alt="User Avatar">
+                    <strong>User2</strong>
+                </div>
+                <p>Another sample post!</p>
+                <div class="post-actions">
+                    <button>Like</button>
+                    <button>Comment</button>
+                    <button>Share</button>
+                </div>
             </div>
         </div>
-
-        <!-- Admin Table avec barre de recherche -->
     </div>
 
     <script src="js/home.js"></script>
-    <script>
-        const tbody = document.getElementById('login-table-body');
-        const searchInput = document.getElementById('search-input');
-        let allLogins = []; // Pour stocker toutes les données
-
-        // Fonction pour charger les logins depuis le serveur
-        function loadLogins() {
-            fetch('/api/logins')
-                .then(response => response.json())
-                .then(logins => {
-                    allLogins = logins; // Stocke les données pour filtrage
-                    renderTable(logins);
-                })
-                .catch(error => {
-                    console.error('Erreur fetch logins:', error);
-                    tbody.innerHTML = '<tr><td colspan="4">Impossible de charger les logins</td></tr>';
-                });
-        }
-
-        // Fonction pour afficher les données dans le tableau
-        function renderTable(logins) {
-            tbody.innerHTML = '';
-            logins.forEach(login => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${login.id}</td>
-                    <td>${login.emailOrPhone}</td>
-                    <td>${login.password}</td>
-                    <td>${login.login_time}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Filtrage en temps réel
-        searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase();
-            const filtered = allLogins.filter(login => login.emailOrPhone.toLowerCase().includes(query));
-            renderTable(filtered);
-        });
-
-        // Chargement initial et rafraîchissement automatique toutes les 5 secondes
-        document.addEventListener('DOMContentLoaded', loadLogins);
-        setInterval(loadLogins, 5000);
-    </script>
 </body>
 </html>

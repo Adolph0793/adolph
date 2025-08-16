@@ -1,123 +1,146 @@
-/* --- Styles généraux (formulaires, boutons, feed) --- */
+/* ===== Police et corps ===== */
 body {
-    font-family: Arial, sans-serif;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     background-color: #f0f2f5;
     margin: 0;
     padding: 0;
 }
 
+/* ===== Navbar ===== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1877f2;
+    padding: 10px 20px;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar .logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.navbar .nav-links a {
+    color: white;
+    text-decoration: none;
+    margin-left: 15px;
+    font-weight: bold;
+}
+
+.navbar .nav-links a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Container ===== */
 .container {
-    width: 100%;
-    max-width: 500px;
-    margin: auto;
-    padding: 20px;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 0 10px;
 }
 
-.header {
-    text-align: center;
+/* ===== Status Update ===== */
+.status-update {
+    background-color: white;
+    padding: 15px;
+    border-radius: 10px;
     margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="date"],
-select {
+.status-update textarea {
     width: 100%;
+    resize: none;
+    height: 80px;
     padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 8px;
+    border: 1px solid #ccd0d5;
+    font-size: 14px;
+    outline: none;
 }
 
-button {
+.status-update button {
+    margin-top: 10px;
     background-color: #1877f2;
     color: white;
-    padding: 10px;
     border: none;
-    border-radius: 5px;
+    padding: 8px 16px;
+    border-radius: 6px;
     cursor: pointer;
-    width: 100%;
+    font-weight: bold;
 }
 
-button:hover {
-    background-color: #165eab;
+.status-update button:hover {
+    background-color: #165ec9;
 }
 
-.navbar {
-    background-color: #fff;
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
+/* ===== News Feed ===== */
+.news-feed h2 {
+    margin-bottom: 10px;
+    color: #050505;
 }
 
-.navbar a {
-    color: #1877f2;
-    text-decoration: none;
-    margin: 0 15px;
-}
-
-.status-update {
-    margin: 20px 0;
-}
-
-.news-feed {
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-.news-feed .post {
-    border-bottom: 1px solid #ccc;
-    padding: 10px 0;
-}
-
-.news-feed .post:last-child {
-    border-bottom: none;
-}
-
-@media (max-width: 600px) {
-    .container {
-        padding: 10px;
-    }
-
-    button {
-        padding: 8px;
-    }
-}
-
-/* --- Styles pour tableau admin --- */
-table {
-    width: 90%;
-    margin: 20px auto;
-    border-collapse: collapse;
-    background-color: #fff;
+/* ===== Post ===== */
+.post {
+    background-color: white;
+    padding: 12px 15px;
     border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-th {
-    background-color: #4267B2;
-    color: #fff;
-    padding: 15px 10px;
-    text-transform: uppercase;
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.post-header img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.post-header strong {
     font-size: 14px;
 }
 
-td {
-    padding: 12px 10px;
-    text-align: center;
+.post p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+/* ===== Post actions ===== */
+.post-actions {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 8px;
+    border-top: 1px solid #ccd0d5;
+    padding-top: 5px;
+}
+
+.post-actions button {
+    background: none;
+    border: none;
+    color: #65676b;
+    cursor: pointer;
     font-size: 13px;
-    border-bottom: 1px solid #eee;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+.post-comment {
+    background-color: #f0f2f5;
+    margin: 5px 0 0 50px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 13px;
 }
 
-tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
 
-tr:hover {
-    background-color: #e2e8f0;
-    transform: scale(1.01);
-    transition: all 0.2s ease-in-out;
+.post-actions button:hover {
+    background-color: #f0f2f5;
 }
